@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
  
-int main () {
+int main (int argc, char* argv[]) {
 	int fd=0;
 	int fp=0;
 	ssize_t nr;
@@ -18,10 +18,16 @@ int main () {
 	int x = 0, y = 0;
 	int i = 0;
 	long location = 0;
-	fp = open ("/dev/fb1",O_RDWR);
+	
+	if (argc < 2) {
+		printf ("please use like:fb_test /dev/fbX");
+		exit(1);
+	}
+		
+	fp = open (argv[1],O_RDWR);
 
 	if (fp < 0){
-		printf("Error : Can not open framebuffer device/n");
+		printf("Error : Can not open framebuffer device %s/n", argv[1]);
 		exit(1);
 	}
 
