@@ -1,89 +1,86 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-// 定义汽车类型
-typedef enum {
-    SEDAN,
-    SPORTS,
-    SUV
-} CarType;
+// 定义产品接口
+typedef struct _Product Product;
 
-// 定义汽车结构体
+struct _Product{
+  void (*print)(Product *product);
+};
+
+// 实现产品接口的具体产品
 typedef struct {
-    CarType type;
-    char* brand;
-    char* model;
-} Car;
+  Product product;
+  int value;
+} ConcreteProduct;
 
-// 定义工厂接口
+// 实现产品接口的具体产品
 typedef struct {
-    Car* (*createCar)(CarType type);
-} CarFactory;
+  Product product;
+  char *value;
+} AnotherConcreteProduct;
 
-// 定义具体工厂实现
+// 实现工厂接口
 typedef struct {
-    CarFactory factory;
-} CarFactoryImpl;
+  Product *(*createProduct)(void);
+} Factory;
 
-// 实现工厂接口方法
-Car* createSedan() {
-    Car* car = malloc(sizeof(Car));
-    car->type = SEDAN;
-    car->brand = "Toyota";
-    car->model = "Camry";
-    return car;
+// 实现工厂接口的具体工厂
+typedef struct {
+  Factory factory;
+  int value;
+} ConcreteFactory;
+
+// 实现工厂接口的具体工厂
+typedef struct {
+  Factory factory;
+  char *value;
+} AnotherConcreteFactory;
+
+// 实现具体产品的 print 方法
+void ConcreteProduct_print(Product *product) {
+  printf("Concrete product with value %d\n", ((ConcreteProduct *)product)->value);
 }
 
-Car* createSportsCar() {
-    Car* car = malloc(sizeof(Car));
-    car->type = SPORTS;
-    car->brand = "Porsche";
-    car->model = "911";
-    return car;
+// 实现具体产品的 print 方法
+void AnotherConcreteProduct_print(Product *product) {
+  printf("Another concrete product with value %s\n", ((AnotherConcreteProduct *)product)->value);
 }
 
-Car* createSUV() {
-    Car* car = malloc(sizeof(Car));
-    car->type = SUV;
-    car->brand = "Jeep";
-    car->model = "Wrangler";
-    return car;
+// 实现具体工厂的 createProduct 方法
+Product *ConcreteFactory_createProduct(void) {
+  ConcreteProduct *product = malloc(sizeof(ConcreteProduct));
+  product->product.print = ConcreteProduct_print;
+  product->value = 42;
+  return (Product *)product;
 }
 
-// 实现工厂接口方法
-Car* createCar(CarFactory* factory, CarType type) {
-    CarFactoryImpl* impl = (CarFactoryImpl*) factory;
-    switch (type) {
-        case SEDAN:
-            return impl->factory.createCar = createSedan();
-        case SPORTS:
-            return impl->factory.createCar = createSportsCar();
-        case SUV:
-            return impl->factory.createCar = createSUV();
-        default:
-            return NULL;
-    }
+// 实现具体工厂的 createProduct 方法
+Product *AnotherConcreteFactory_createProduct(void) {
+  AnotherConcreteProduct *product = malloc(sizeof(AnotherConcreteProduct));
+  product->product.print = AnotherConcreteProduct_print;
+  product->value = "Hello, world!";
+  return (Product *)product;
 }
 
 int main() {
-    // 创建工厂对象
-    CarFactoryImpl factory;
-    factory.factory.createCar = createCar;
+  // 创建具体工厂
+  ConcreteFactory *factory1 = malloc(sizeof(ConcreteFactory));
+  factory1->factory.createProduct = ConcreteFactory_createProduct;
+  // 创建具体工厂
+  AnotherConcreteFactory *factory2 = malloc(sizeof(AnotherConcreteFactory));
+  factory2->factory.createProduct = AnotherConcreteFactory_createProduct;
+  // 使用工厂创建产品
+  Product *product1 = factory1->factory.createProduct();
+  Product *product2 = factory2->factory.createProduct();
+  // 调用产品的 print 方法
+  product1->print(product1);
+  product2->print(product2);
+  // 释放内存
+  free(product1);
+  free(product2);
+  free(factory1);
+  free(factory2);
 
-    // 创建不同类型的汽车
-    Car* sedan = factory.factory.createCar(&factory.factory, SEDAN);
-    Car* sportsCar = factory.factory.createCar(&factory.factory, SPORTS);
-    Car* suv = factory.factory.createCar(&factory.factory, SUV);
-
-    // 打印汽车信息
-    printf("Sedan: %s %s\n", sedan->brand, sedan->model);
-    printf("Sports car: %s %s\n", sportsCar->brand, sportsCar->model);
-    printf("SUV: %s %s\n", suv->brand, suv->model);
-
-    // 释放内存
-    free(sedan);
-    free(sportsCar);
-    free(suv);
-
-    return 0;
+  return 0;
 }
-
