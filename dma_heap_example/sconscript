@@ -1,0 +1,4 @@
+Import('env')
+
+dma_heap_example = env.Program('dma_heap_example', ['dma_heap_example.c'])
+env.Install(env['BIN_DIR'], dma_heap_example)
